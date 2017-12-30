@@ -1,0 +1,25 @@
+# this Service will create AWS classic ELB for my.application.name deployment
+# and expose HTTP & HTTPS ports, but it requires AWS Certificate Manager
+# to have valid SSL certificate imported
+apiVersion: v1
+kind: Service
+metadata:
+  name: my.application.name
+  namespace: default
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-east-1:aws.account.number:certificate/certificate.number"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+spec:
+  selector:
+    app: my.application.name
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+    - port: 443
+      protocol: TCP
+      targetPort: 80
+      name: https

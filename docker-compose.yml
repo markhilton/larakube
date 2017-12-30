@@ -1,0 +1,68 @@
+version: "2"
+
+services:
+
+### MySQL Container #########################################
+    mysql:
+        hostname: mysql
+        container_name: mysql
+        image: mysql:5.7
+        volumes:
+            - mysql:/var/lib/mysql:delegated
+        ports:
+            - "3306:3306"
+        networks:
+            - backend
+        env_file: 
+            - .env.mysql
+
+### Application Code Container ##############################
+    application:
+        hostname: app
+        container_name: app
+        image: tianon/true
+        volumes:
+            - ./laravel-project:/var/www:delegated
+            - ./infrastructure:/var/www/infrastructure:delegated
+
+### PHP-FPM Container #######################################
+    backend:
+        hostname: backend
+        container_name: backend
+        image: crunchgeek/php-fpm:7.0-r2
+        volumes_from:
+            - application
+        networks:
+            - backend
+        env_file: 
+            - .env.php-fpm
+
+### Nginx Server Container ##################################
+    frontend:
+        hostname: frontend
+        container_name: frontend
+        image: crunchgeek/nginx-pagespeed:latest
+        volumes_from:
+            - application
+        ports:
+            - "80:80"
+        depends_on:
+            - backend
+        networks:
+            - frontend
+            - backend
+        env_file: 
+            - .env.nginx
+
+### Networks Setup ############################################
+networks:
+    frontend:
+        driver: "bridge"
+    backend:
+        driver: "bridge"
+
+### Volumes Setup ###########################################
+volumes:
+    mysql:
+        driver: "local"
+

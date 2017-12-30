@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: laravel.config
+  labels:
+    name: laravel.config
+  namespace: default
+data:
+  APP_ENV: "local"
+  APP_KEY: "base64:vw6G2uP8LV22haEERtzr5yDCBraLrMwbxlbSJDA97uk="
+  APP_DEBUG: "true"
+  APP_LOG: "errorlog"
+  APP_LOG_LEVEL: "debug"
+  APP_URL: "http://localhost"
+
+  MYSQL_PORT: "3306"
+  MYSQL_HOST: "localhost"
+  MYSQL_DATABASE: "homestead"
+  MYSQL_USER: "homestead"
+  MYSQL_PASSWORD: "secret"
+  MYSQL_ROOT_PASSWORD: "secret"
+
+  BROADCAST_DRIVER: "log"
+  CACHE_DRIVER: "file"
+  SESSION_DRIVER: "file"
+  QUEUE_DRIVER: "sync"
+
+  REDIS_HOST: "127.0.0.1"
+  REDIS_PORT: "6379"
+
+  AUTHY_SECRET: "none"
+  STRIPE_MODEL: "App\\User"
+  BRAINTREE_MODEL: "App\\User"

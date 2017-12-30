@@ -1,0 +1,9 @@
+# https://stackoverflow.com/questions/32510310/kubernetes-imagepullsecrets-not-working-getting-image-not-found
+# kubectl get secrets docker-auth -o yaml | grep dockercfg: | cut -f 2 -d : | base64 -D > actual.dockercfg
+apiVersion: v1
+kind: Secret
+metadata: 
+  name: docker-auth
+data:
+  .dockercfg: base64.string
+type: kubernetes.io/dockercfg

@@ -1,0 +1,80 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: laravel-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: laravel-project
+
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+
+  template:
+    metadata:
+      labels:
+        app: laravel-project
+    spec:
+      volumes:
+        - name: laravel-volume
+          emptyDir: {}
+      # inject hostname to connect nginx with php-fpm backend
+      # because dokcer calls it backend while kubernetes requires Pod's localhost
+      hostAliases:
+        - ip: "127.0.0.1"
+          hostnames:
+            - "backend"
+
+      # init container will copy application into the emptydir volume
+      # to share it with php-fpm & nginx containers on the pod
+      initContainers:
+        - name: app
+          image: index.docker.io/crunchgeek/laravel-project
+          command: ['sh', '-c', 'cp -rp /var/www/* /app/']
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: laravel-volume
+              mountPath: /app
+          envFrom:
+            - configMapRef:
+                name: laravel.config
+
+      containers:
+        - name: php-fpm
+          image: index.docker.io/crunchgeek/php-fpm:7.0-r2
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: laravel-volume
+              mountPath: /var/www
+          envFrom:
+            - configMapRef:
+                name: laravel.config
+            - configMapRef:
+                name: php-fpm.config
+
+        - name: nginx
+          image: index.docker.io/crunchgeek/nginx-pagespeed:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: laravel-volume
+              mountPath: /var/www
+          envFrom:
+            - configMapRef:
+                name: nginx.config
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 30
+            timeoutSeconds: 3
+
+      imagePullSecrets:
+        - name: docker-auth

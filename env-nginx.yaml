@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx.config
+  labels:
+    name: nginx.config
+  namespace: default
+data:
+  NGINX_INCLUDE_PATH: "/var/www/infrastructure/nginx.conf"
+  NGINX_FASTCGI_GEOIP: "on"
+  NGINX_DEFAULT_SERVER: "off"
+  NGINX_PAGESPEED: "off"
+  NGINX_PAGESPEED_JS: "off"
+  NGINX_PAGESPEED_CSS: "off"
+  NGINX_PAGESPEED_IMG: "off"
+  NGINX_PAGESPEED_STORAGE: "memcached"
+  NGINX_PAGESPEED_REDIS: "redis:6379"
+  NGINX_PAGESPEED_MEMCACHED: "memcached:11211"
