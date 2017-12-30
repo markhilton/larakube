@@ -1,6 +1,9 @@
 # Laravel 
+Walk through deploying a Laravel application on auto scaled Kubernetes cluster. 
 
-## install Laravel
+Goal: Deploy PHP app that will auto scale based on average CPU utilization across deployed instance. 
+
+## install Laravel with composer
 ```
 composer global require "laravel/installer"
 ```
@@ -11,6 +14,7 @@ composer create-project --prefer-dist laravel/laravel laravel-project
 ```
 
 # Docker 
+For the purpose of this demo I've built a public docker image and pushed to my Docker account. `Dockerfile` adds laravel app into a lightweight alpine image.
 
 ## build application docker image
 ```
@@ -63,3 +67,5 @@ kubectl create -f service.aws.yaml
 ```
 kubectl create -f autoscaler.yaml
 ```
+
+That's it! Now the infrastructure will auto adjust itself to the app resources demand.
