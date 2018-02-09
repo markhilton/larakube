@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 
 services:
 
@@ -16,22 +16,14 @@ services:
         env_file: 
             - .env.mysql
 
-### Application Code Container ##############################
-    application:
-        hostname: app
-        container_name: app
-        image: tianon/true
-        volumes:
-            - ./laravel-project:/var/www:delegated
-            - ./infrastructure:/var/www/infrastructure:delegated
-
 ### PHP-FPM Container #######################################
     backend:
         hostname: backend
         container_name: backend
-        image: crunchgeek/php-fpm:7.0-r2
-        volumes_from:
-            - application
+        image: crunchgeek/php-fpm:7.1-r1
+        volumes:
+            - ./laravel-project:/var/www:delegated
+            - ./infrastructure:/var/www/infrastructure:delegated
         networks:
             - backend
         env_file: 
@@ -42,10 +34,12 @@ services:
         hostname: frontend
         container_name: frontend
         image: crunchgeek/nginx-pagespeed:latest
-        volumes_from:
-            - application
+        volumes:
+            - ./laravel-project:/var/www:delegated
+            - ./infrastructure:/var/www/infrastructure:delegated
         ports:
             - "80:80"
+            - "8080:8080"
         depends_on:
             - backend
         networks:
