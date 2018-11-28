@@ -13,40 +13,115 @@ services:
             - "3306:3306"
         networks:
             - backend
-        env_file: 
-            - .env.mysql
+        environment: 
+            - MYSQL_VERSION=5.7
+            - MYSQL_HOST=mysql
+            - MYSQL_PORT=3306
+            - MYSQL_DATABASE=homestead
+            - MYSQL_USER=homestead
+            - MYSQL_PASSWORD=secret
+            - MYSQL_ALLOW_EMPTY_PASSWORD=yes
 
-### PHP-FPM Container #######################################
-    backend:
-        hostname: backend
-        container_name: backend
-        image: crunchgeek/php-fpm:7.1-r1
-        volumes:
-            - ./laravel-project:/var/www:delegated
-            - ./infrastructure:/var/www/infrastructure:delegated
+            ### Redis Container #########################################
+    redis:
+        hostname: redis
+        container_name: redis
+        image: redis:latest
+        ports:
+            - "6379:6379"
         networks:
             - backend
-        env_file: 
-            - .env.php-fpm
+
+### Composer Container ######################################
+    composer:
+        hostname: composer
+        container_name: composer
+        image: crunchgeek/composer:7.2
+        working_dir: /app
+        command: [ "bash", "-c", "composer require predis/predis && composer require laravel/horizon && composer install && touch /tmp/log && tail -f /tmp/log" ]
+        volumes:
+            - ./laravel-project:/app:cached
+            - vendor:/app/vendor
+
+### NODE Container ##########################################
+    node:
+        hostname: node
+        container_name: node
+        working_dir: /app
+        image: node:6.14.4
+        command: [ "bash", "-c", "npm i --save && npm run watch" ]
+        depends_on:
+            - composer
+        volumes:
+            - ./laravel-project:/app:cached
+            - node:/app/node_modules
+            - vendor:/app/vendor
+
+### PHP-FPM Container #######################################
+    php:
+        hostname: php
+        container_name: php
+        image: crunchgeek/php-fpm:7.2
+        working_dir: /app
+        volumes:
+            - vendor:/app/vendor
+            - storage:/app/storage
+            - ./laravel-project:/app:delegated
+            - ./infrastructure:/config:delegated
+        depends_on:
+            - node
+            - redis
+            - mysql
+            - composer
+        networks:
+            - backend
+        environment: 
+            # more info at: https://github.com/markhilton/docker-php-fpm
+            - PHP_UID=9000
+            - PHP_GID=9000
+            - PHP_USER=php-fpm
+            - PHP_HOME=/app
+            - PHP_POOL_PATH=/config/www.conf
+            - PHP_BOOT_SCRIPTS=/config/provision.sh
+            - PHP_CRONTABS_PATH=/config/artisan.crontab
+            # overwrite default Laravel environment
+            - DB_HOST=mysql
+            - REDIS_HOST=redis
+            - CACHE_DRIVER=redis
+            - SESSION_DRIVER=redis
+            - QUEUE_CONNECTION=redis
+            # if supervisord if ON then php-fpm is OFF
+            # - SUPERVISORD_PATH=/config/supervisord.conf
 
 ### Nginx Server Container ##################################
-    frontend:
+    nginx:
         hostname: frontend
         container_name: frontend
         image: crunchgeek/nginx-pagespeed:latest
+        working_dir: /app
         volumes:
-            - ./laravel-project:/var/www:delegated
-            - ./infrastructure:/var/www/infrastructure:delegated
+            - ./laravel-project:/app:delegated
+            - ./laravel-project/public:/app/public:delegated
+            - uploads:/app/public/storage:delegated
+            - ./infrastructure:/config:delegated
         ports:
             - "80:80"
             - "8080:8080"
-        depends_on:
-            - backend
+        links:
+            - php
         networks:
             - frontend
             - backend
-        env_file: 
-            - .env.nginx
+        environment: 
+            # more info at: https://github.com/markhilton/docker-nginx-pagespeed
+            - NGINX_INCLUDE_PATH=/config/nginx.conf
+            - NGINX_FASTCGI_GEOIP=on
+            - NGINX_DEFAULT_SERVER=off
+            - NGINX_PAGESPEED=off
+            - NGINX_PAGESPEED_JS=off
+            - NGINX_PAGESPEED_CSS=off
+            - NGINX_PAGESPEED_IMG=off
+            - NGINX_PAGESPEED_STORAGE=files
 
 ### Networks Setup ############################################
 networks:
@@ -58,5 +133,13 @@ networks:
 ### Volumes Setup ###########################################
 volumes:
     mysql:
+        driver: "local"
+    node:
+        driver: "local"
+    uploads:
+        driver: "local"
+    storage:
+        driver: "local"
+    vendor:
         driver: "local"
 

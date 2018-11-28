@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "laravel.fullname" . }}
+  namespace: default
+  labels:
+    name: {{ template "laravel.name" . }}
+
+data:
+  # Laravel
+  APP_ENV: "local"
+  APP_KEY: "base64:UPDATE_YOUR_APP_KEY_HERE"
+  APP_DEBUG: "true"
+  APP_LOG: "errorlog"
+  APP_LOG_LEVEL: "debug"
+  APP_URL: "http://localhost"
+
+  MYSQL_PORT: "3306"
+  MYSQL_HOST: "127.0.0.1"
+  MYSQL_DATABASE: "homestead"
+  MYSQL_USER: "homestead"
+  MYSQL_PASSWORD: "secret"
+  MYSQL_ROOT_PASSWORD: "secret"
+
+  BROADCAST_DRIVER: "log"
+  CACHE_DRIVER: "file"
+  SESSION_DRIVER: "file"
+  QUEUE_DRIVER: "sync"
+
+  REDIS_HOST: "127.0.0.1"
+  REDIS_PORT: "6379"
+
+  AUTHY_SECRET: "none"
+  STRIPE_MODEL: "App\\User"
+  BRAINTREE_MODEL: "App\\User"
+
+  # Nginx configuration
+  NGINX_INCLUDE_PATH:        "/config/nginx.conf"
+  NGINX_FASTCGI_GEOIP:       "on"
+  NGINX_DEFAULT_SERVER:      "off"
+  NGINX_PAGESPEED:           "off"
+  NGINX_PAGESPEED_JS:        "off"
+  NGINX_PAGESPEED_CSS:       "off"
+  NGINX_PAGESPEED_IMG:       "off"
+  NGINX_PAGESPEED_STORAGE:   "files"
+  NGINX_PAGESPEED_REDIS:     "127.0.0.1:6379"
+  NGINX_PAGESPEED_MEMCACHED: "127.0.0.1:11211"
+
+  # PHP configuration
+  PHP_UID:                   "9000"
+  PHP_GID:                   "9000"
+  PHP_USER:                  "php-fpm"
+  PHP_HOME:                  "/app"
+  PHP_POOL_PATH:             "/config/www.conf"
+  PHP_CRONTABS_PATH:         "/config/artisan.crontab"
+#  SUPERVISORD_PATH:          "/config/supervisord.conf"

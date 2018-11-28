@@ -1,0 +1,123 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+
+metadata:
+  name: {{ template "laravel.fullname" . }}
+  labels:
+    app: {{ template "laravel.name" . }}
+    chart: {{ template "laravel.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+
+spec:
+  replicas: {{ .Values.minReplicas }}
+
+  selector:
+    matchLabels:
+      app: {{ template "laravel.name" . }}
+      release: {{ .Release.Name }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ template "laravel.name" . }}
+        release: {{ .Release.Name }}
+
+    spec:
+      volumes:
+        - name: app
+          emptyDir: {}
+        - name: config
+          emptyDir: {}
+        # those should be changed to persistent storage
+        # emptyDir is only for the demo purposes
+        - name: storage
+          emptyDir: {}
+        - name: uploads
+          emptyDir: {}
+
+      # inject hostname to connect nginx with php-fpm backend
+      # because dokcer calls it backend while kubernetes requires Pod's localhost
+      hostAliases:
+        - ip: "127.0.0.1"
+          hostnames:
+            - "php"
+
+    spec:
+      # init container will copy application into the emptydir volume
+      # to share it with php-fpm & nginx containers on the pod
+      initContainers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ['sh', '-c', '/init.sh']
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: app
+              mountPath: /src
+            - name: config
+              mountPath: /cfg
+
+      containers:
+        - name: php-fpm
+          image: index.docker.io/crunchgeek/php-fpm:7.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: app
+              mountPath: /app
+            - name: config
+              mountPath: /config
+          envFrom:
+            - configMapRef:
+                name: {{ template "laravel.fullname" . }}
+
+        - name: nginx
+          image: index.docker.io/crunchgeek/nginx-pagespeed
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: app
+              mountPath: /app
+            - name: config
+              mountPath: /config
+          envFrom:
+            - configMapRef:
+                name: {{ template "laravel.fullname" . }}
+
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 2
+            timeoutSeconds: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 2
+            timeoutSeconds: 3
+
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

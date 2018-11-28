@@ -1,1 +1,1 @@
-* * * * * php-fpm php /var/www/artisan schedule:run > /dev/null 2>&1
+* * * * * php-fpm php /app/artisan schedule:run > /tmp/stdout.log 2>&1
