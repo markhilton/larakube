@@ -65,6 +65,7 @@ spec:
 
       containers:
         - name: php-fpm
+          workingDir: /app
           image: index.docker.io/crunchgeek/php-fpm:7.2
           imagePullPolicy: IfNotPresent
           ports:
@@ -79,6 +80,7 @@ spec:
                 name: {{ template "laravel.fullname" . }}
 
         - name: nginx
+          workingDir: /app
           image: index.docker.io/crunchgeek/nginx-pagespeed
           imagePullPolicy: IfNotPresent
           ports:
