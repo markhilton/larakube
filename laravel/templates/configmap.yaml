@@ -8,31 +8,31 @@ metadata:
 
 data:
   # Laravel
-  APP_ENV: "local"
-  APP_KEY: "base64:UPDATE_YOUR_APP_KEY_HERE"
-  APP_DEBUG: "true"
-  APP_LOG: "errorlog"
-  APP_LOG_LEVEL: "debug"
-  APP_URL: "http://localhost"
+  APP_ENV:             "local"
+  APP_KEY:             "{{ .Values.appKey }}"
+  APP_DEBUG:           "true"
+  APP_LOG:             "errorlog"
+  APP_LOG_LEVEL:       "debug"
+  APP_URL:             "http://localhost"
 
-  MYSQL_PORT: "3306"
-  MYSQL_HOST: "127.0.0.1"
-  MYSQL_DATABASE: "homestead"
-  MYSQL_USER: "homestead"
-  MYSQL_PASSWORD: "secret"
+  MYSQL_PORT:          "3306"
+  MYSQL_HOST:          "127.0.0.1"
+  MYSQL_DATABASE:      "homestead"
+  MYSQL_USER:          "homestead"
+  MYSQL_PASSWORD:      "secret"
   MYSQL_ROOT_PASSWORD: "secret"
 
-  BROADCAST_DRIVER: "log"
-  CACHE_DRIVER: "file"
-  SESSION_DRIVER: "file"
-  QUEUE_DRIVER: "sync"
+  BROADCAST_DRIVER:    "log"
+  CACHE_DRIVER:        "file"
+  SESSION_DRIVER:      "file"
+  QUEUE_DRIVER:        "sync"
 
-  REDIS_HOST: "127.0.0.1"
-  REDIS_PORT: "6379"
+  REDIS_HOST:          "127.0.0.1"
+  REDIS_PORT:          "6379"
 
-  AUTHY_SECRET: "none"
-  STRIPE_MODEL: "App\\User"
-  BRAINTREE_MODEL: "App\\User"
+  AUTHY_SECRET:        "none"
+  STRIPE_MODEL:        "App\\User"
+  BRAINTREE_MODEL:     "App\\User"
 
   # Nginx configuration
   NGINX_INCLUDE_PATH:        "/config/nginx.conf"

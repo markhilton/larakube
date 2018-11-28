@@ -11,11 +11,18 @@ metadata:
 
 spec:
   replicas: {{ .Values.minReplicas }}
+  minReadySeconds: 20
 
   selector:
     matchLabels:
       app: {{ template "laravel.name" . }}
       release: {{ .Release.Name }}
+
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
 
   template:
     metadata:
@@ -43,13 +50,12 @@ spec:
           hostnames:
             - "php"
 
-    spec:
       # init container will copy application into the emptydir volume
       # to share it with php-fpm & nginx containers on the pod
       initContainers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          command: ['sh', '-c', '/init.sh']
+          command: [ "sh", "-c", "/init.sh" ]
           imagePullPolicy: Always
           volumeMounts:
             - name: app

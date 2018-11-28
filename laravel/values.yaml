@@ -1,3 +1,5 @@
+appKey: base64:vw6G2uP8LV22haEERtzr5yDCBraLrMwbxlbSJDA97uk=
+
 replicaCount: 1
 minReplicas: 1
 maxReplicas: 10
@@ -5,7 +7,7 @@ targetCPUup: 60
 
 image:
   repository: index.docker.io/crunchgeek/laravel-project
-  tag: stable
+  tag: latest
   pullPolicy: IfNotPresent
 
 service:
@@ -15,8 +17,8 @@ service:
 ingress:
   enabled: false
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+    # kubernetes.io/ingress.class: nginx
   path: /
   hosts:
     - chart-example.local
